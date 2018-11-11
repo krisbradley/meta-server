@@ -9,19 +9,10 @@ import (
 
 func main() {
 	router := gin.Default()
-	router.GET("/hostname", handleHostname)
 	router.GET("/network", handleNetwork)
 	router.GET("/network/interface", handleNetworkInterface)
 	router.GET("/network/interface/:interfaceName", handleSingleNetworkInterface)
 	router.Run(":999")
-}
-
-func handleHostname(context *gin.Context) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		returnError(context, err)
-	}
-	returnOk(context, hostname)
 }
 
 func handleNetwork(context *gin.Context) {
@@ -29,13 +20,22 @@ func handleNetwork(context *gin.Context) {
 	if err != nil {
 		returnError(context, err)
 	}
+	ip := []string{}
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				returnOk(context, ipnet.IP.String())
+				ip = append(ip, ipnet.IP.String())
 			}
 		}
 	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		returnError(context, err)
+	}
+	returnOk(context, gin.H{
+		"hostname": hostname,
+		"ip": ip,
+	})
 }
 
 func handleNetworkInterface(context *gin.Context) {
