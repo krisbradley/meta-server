@@ -12,6 +12,7 @@ func main() {
 	router.GET("/hostname", handleHostname)
 	router.GET("/network", handleNetwork)
 	router.GET("/network/interface", handleNetworkInterface)
+	router.GET("/network/interface/:interfaceName", handleSingleNetworkInterface)
 	router.Run(":999")
 }
 
@@ -43,6 +44,15 @@ func handleNetworkInterface(context *gin.Context) {
 		returnError(context, err)
 	}
 	returnOk(context, interfaces)
+}
+
+
+func handleSingleNetworkInterface(context *gin.Context) {
+	singleInterface, err := net.InterfaceByName(context.Param("interfaceName"))
+	if err != nil {
+		returnError(context, err)
+	}
+	returnOk(context, singleInterface)
 }
 
 func returnOk(context *gin.Context, message interface{}) {
